@@ -12,9 +12,7 @@ function getShaders() {
       current: 0,
       hit: function() {
         this.current += 1;
-        if (this.current >= this.limit) {
-          this.breach();
-        }
+        if (this.current >= this.limit) { this.breach(); }
       },
       breach: function() {
         resolve();

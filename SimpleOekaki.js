@@ -1,60 +1,61 @@
-var VERSION = "0.0.1";
+var VERSION = "0.0.2";
 
 var gl;
 
+var canvas;
+
+var canvasFBO;
+var canvasTexture;
+
+var shaderProgram;
+var shaderProgram2;
+
+var vertexPositionAttribute;
+var vertexPositionAttribute2;
+
+var vertexScreenResolutionUniform;
+var vertexMousePositionUniform;
+var vertexSizeUniform;
+
+var diameter = 3;
+
+var backgroundColor = [1,1,1];
+var layers = [
+  {
+	color:[1,0,0],
+	glBlend:[1,0,0],
+	visible: 1
+  },
+  {
+	color:[0,1,0],
+	glBlend:[0,1,0],
+	visible: 1
+  },
+  {
+	color:[0,0,1],
+	glBlend:[0,1,0],
+	visible: 1
+  }
+];
+
 function SimpleOekaki(div){
-  var canvas;
-
-  var canvasFBO;
-  var canvasTexture;
-
-  var shaderProgram;
-  var shaderProgram2;
-
-  var vertexPositionAttribute;
-  var vertexPositionAttribute2;
-
-  var vertexScreenResolutionUniform;
-  var vertexMousePositionUniform;
-  var vertexSizeUniform;
-
-  var diameter = 2;
-
-  var backgroundColor = [1,1,1];
-  var layers = [
-	{
-	  color:[1,0,0],
-	  glBlend:[1,0,0],
-	  visible: 1
-	},
-	{
-	  color:[0,1,0],
-	  glBlend:[0,1,0],
-	  visible: 1
-	},
-	{
-	  color:[0,0,1],
-	  glBlend:[0,1,0],
-	  visible: 1
-	}
-  ];
 
   var paintCircle = function(mouseX, mouseY){
-	gl.useProgram(shaderProgram);
-	gl.bindFramebuffer(gl.FRAMEBUFFER, canvasFBO);
-	gl.uniform2f(vertexScreenResolutionUniform, canvas.width,canvas.height);
-	gl.uniform2f(vertexMousePositionUniform, mouseX,mouseY);
-	gl.uniform1f(vertexSizeUniform, diameter);
-	gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+    gl.useProgram(shaderProgram);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, canvasFBO);
+    gl.uniform2f(vertexScreenResolutionUniform, canvas.width,canvas.height);
+    gl.uniform2f(vertexMousePositionUniform, mouseX,mouseY);
+    gl.uniform1f(vertexSizeUniform, diameter);
+    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
   }
 
   var paintLine = function(x0, y0, x1, y1){
-	var dist = Math.sqrt((x0-x1)*(x0-x1) + (y0-y1)*(y0-y1));
-	for (var i = 1/dist; i <= 1.0; i+= 1/dist){
+    var dist = Math.sqrt((x0-x1)*(x0-x1) + (y0-y1)*(y0-y1));
+    for (var i = 1/dist; i <= 1.0; i+= 1/dist){
 	  var x = x0*i + x1*(1-i);
 	  var y = y0*i + y1*(1-i);
 	  paintCircle(x,y);
-	}
+    }
   }
   var paintGL = function(){
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -62,6 +63,8 @@ function SimpleOekaki(div){
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);
 	gl.clear(gl.COLOR_BUFFER_BIT);
 	gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+
+    requestAnimationFrame(paintGL);
   }
   var initBuffers = function(){
 	var canvasBuffer = gl.createBuffer();
@@ -96,7 +99,7 @@ function SimpleOekaki(div){
 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvasFBO.width, canvasFBO.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, canvasTexture, 0);
 
-	gl.clearColor(0.75,0.75,0.78,1)
+	gl.clearColor(0.75,0.75,0.78,1);
 	gl.clear(gl.COLOR_BUFFER_BIT);
 
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -144,7 +147,7 @@ function SimpleOekaki(div){
 	// Initialize the shader program
 	getShaders().then(initShaders);
 	initBuffers();
-	setInterval(paintGL,15)
+    paintGL();
   }
 
   var setInputCallbacks = function(){
